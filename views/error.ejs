@@ -1,0 +1,44 @@
+<%- include('partials/header') %>
+
+    <div class="container mx-auto px-4 py-32 flex flex-col items-center justify-center min-h-[60vh]">
+        <div
+            class="bg-surface border border-border p-10 rounded-lg shadow-2xl max-w-lg w-full text-center relative overflow-hidden group">
+
+            <!-- Background element -->
+            <div class="absolute inset-0 bg-bear/5 opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+
+            <div class="relative z-10">
+                <div
+                    class="w-24 h-24 bg-bg rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-bear shadow-[0_0_20px_rgba(255,0,122,0.2)] animate-pulse">
+                    <i class="fas fa-exclamation-triangle text-4xl text-bear"></i>
+                </div>
+
+                <h1 class="text-3xl font-bold text-white font-mono mb-2 tracking-tight">SYSTEM ERROR</h1>
+                <div class="h-1 w-20 bg-bear mx-auto mb-8"></div>
+
+                <div
+                    class="bg-bg border border-border p-4 rounded mb-8 text-left font-mono text-xs text-bear/80 overflow-x-auto">
+                    <span class="text-text-secondary">ERROR_MSG:</span>
+                    <%= typeof error !='undefined' ? error : 'An unexpected error occurred during execution.' %>
+                </div>
+
+                <div class="flex flex-col gap-3 sm:flex-row sm:justify-center">
+                    <a href="/dashboard"
+                        class="px-8 py-3 bg-action hover:bg-blue-600 text-white font-bold rounded font-mono text-sm transition shadow-lg shadow-action/20 border border-transparent">
+                        RETURN TO TERMINAL
+                    </a>
+                    <a href="/"
+                        class="px-8 py-3 bg-transparent border border-border hover:bg-white/5 text-text-secondary hover:text-white font-bold rounded font-mono text-sm transition">
+                        HOME
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center">
+            <p class="text-[10px] text-text-secondary font-mono tracking-[0.2em] opacity-50">STATUS: 500 // SYSTEM_HALT
+            </p>
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>

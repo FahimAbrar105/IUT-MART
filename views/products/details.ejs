@@ -1,0 +1,350 @@
+
+<%- include('../partials/header') %>
+
+    <div class="container mx-auto px-4 py-8" x-data="terminalData()">
+        <!-- Top Bar: Asset Name & Quick Stats -->
+        <div
+            class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-border pb-4">
+            <div>
+                <div class="flex items-center space-x-3 mb-1">
+                    <h1 class="text-3xl font-bold text-white font-mono tracking-tighter">
+                        <%= product.title.toUpperCase() %>
+                    </h1>
+                    <span
+                        class="px-2 py-0.5 rounded bg-action/20 text-action text-xs font-mono border border-action/30">SPOT</span>
+                </div>
+                <div class="flex items-center space-x-4 text-xs font-mono text-text-secondary">
+                    <span>SECTOR: <span class="text-white">
+                            <%= product.category.toUpperCase() %>
+                        </span></span>
+                    <span>ID: <span class="text-white">
+                            <%= product._id.toString().substring(0,8) %>
+                        </span></span>
+                </div>
+            </div>
+
+            <div class="flex items-end flex-col mt-4 md:mt-0">
+                <div class="flex items-baseline space-x-3">
+                    <span class="text-xl font-bold text-bull font-mono" x-text="'৳' + currentPrice">৳<%= product.price
+                            %></span>
+                    <span class="text-sm text-bull flex items-center">
+                        <i class="fas fa-caret-up mr-1"></i>
+                        <span x-text="percentChange + '%'">+2.45%</span>
+                    </span>
+                </div>
+                <p class="text-[10px] text-gray-400 font-mono mt-1">BASE PRICE: <span class="text-white font-bold">৳<%=
+                            product.price %></span> • REAL-TIME FEED</p>
+            </div>
+        </div>
+
+        <!-- Main Terminal Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[600px]">
+
+            <!-- Left Col: Visuals (3 cols) -->
+            <div class="lg:col-span-3 flex flex-col gap-4 h-full" x-data="{ 
+                activeImage: '<%= (product.images && product.images.length > 0) ? product.images[0] : "" %>',
+                images: <%= JSON.stringify(product.images || []) %> 
+            }">
+                <div
+                    class="bg-surface border border-border rounded-lg p-2 h-64 lg:h-auto flex-grow relative overflow-hidden group">
+                    <!-- Scanline Effect -->
+                    <div
+                        class="absolute inset-0 bg-gradient-to-b from-transparent via-action/5 to-transparent z-10 animate-scan pointer-events-none">
+                    </div>
+
+                    <% if (product.images && product.images.length> 0) { %>
+                        <img :src="activeImage"
+                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            onerror="this.style.display='none'; this.parentElement.querySelector('.fallback-icon').classList.remove('hidden');">
+
+                        <div
+                            class="hidden w-full h-full flex flex-col items-center justify-center bg-black/50 border border-border/50 fallback-icon absolute inset-0">
+                            <i class="fas fa-cube text-4xl text-border mb-2 opacity-50"></i>
+                            <span class="text-xs font-mono text-bear tracking-widest">[REDACTED]</span>
+                        </div>
+                        <% } else { %>
+                            <div
+                                class="w-full h-full flex flex-col items-center justify-center bg-black/50 border border-border/50">
+                                <i class="fas fa-cube text-4xl text-border mb-2 opacity-50"></i>
+                                <span class="text-xs font-mono text-bear tracking-widest">[REDACTED]</span>
+                            </div>
+                            <% } %>
+
+                                <div
+                                    class="absolute bottom-2 right-2 px-2 py-1 bg-black/80 text-[10px] font-mono text-white border border-white/20">
+                                    IMG_SOURCE: TRADER_UPLOAD
+                                </div>
+                </div>
+
+                <!-- Thumbnails -->
+                <% if (product.images && product.images.length> 1) { %>
+                    <div class="grid grid-cols-5 gap-2">
+                        <template x-for="img in images">
+                            <div @click="activeImage = img"
+                                class="aspect-square bg-bg border rounded cursor-pointer overflow-hidden relative"
+                                :class="activeImage === img ? 'border-action opacity-100' : 'border-border opacity-50 hover:opacity-100'">
+                                <img :src="img" class="w-full h-full object-cover">
+                            </div>
+                        </template>
+                    </div>
+                    <% } %>
+
+                        <!-- Asset Fundamentals -->
+                        <div class="bg-surface border border-border rounded-lg p-4 flex-grow overflow-y-auto">
+                            <h3 class="text-xs font-bold text-text-secondary border-b border-border pb-2 mb-2">ASSET
+                                FUNDAMENTALS</h3>
+                            <p class="text-sm text-white font-mono leading-relaxed opacity-80">
+                                <%= product.description %>
+                            </p>
+
+                            <div class="mt-4 pt-4 border-t border-border">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs text-text-secondary">SELLER RATING</span>
+                                    <div class="flex space-x-1">
+                                        <i class="fas fa-star text-bull text-xs"></i>
+                                        <i class="fas fa-star text-bull text-xs"></i>
+                                        <i class="fas fa-star text-bull text-xs"></i>
+                                        <i class="fas fa-star text-bull text-xs"></i>
+                                        <i class="fas fa-star text-gray-600 text-xs"></i>
+                                    </div>
+                                </div>
+                                <% if (user && product.user && user._id.toString() !==product.user._id.toString()) { %>
+                                    <a href="/chat/start/<%= product.user._id %>?productId=<%= product._id %>"
+                                        class="block w-full text-center py-2 mt-4 border border-text-secondary text-text-secondary hover:text-white hover:border-white text-xs font-mono transition">
+                                        INITIATE SECURE COMMS
+                                    </a>
+                                    <% } %>
+                            </div>
+                        </div>
+            </div>
+
+            <!-- Center Col: Order Book (3 cols) -->
+            <div class="lg:col-span-3 bg-surface border border-border rounded-lg flex flex-col h-full overflow-hidden">
+                <div class="p-3 border-b border-border flex justify-between items-center bg-bg/50">
+                    <h3 class="text-xs font-bold text-white">ORDER BOOK</h3>
+                    <span class="text-[10px] text-bull animate-pulse">● LIVE</span>
+                </div>
+
+                <div class="flex-grow overflow-hidden relative">
+                    <div class="grid grid-cols-3 text-[10px] text-text-secondary p-2 border-b border-border bg-bg">
+                        <span>TRADER</span>
+                        <span class="text-center">SIZE</span>
+                        <span class="text-right">PRICE (৳)</span>
+                    </div>
+
+                    <!-- Asks (Sells) -->
+                    <div class="flex flex-col-reverse h-1/2 overflow-hidden border-b border-border border-dashed">
+                        <template x-for="ask in asks" :key="ask.id">
+                            <div class="grid grid-cols-3 text-xs p-1 hover:bg-white/5 cursor-pointer font-mono">
+                                <span class="text-bear opacity-70" x-text="ask.trader"></span>
+                                <span class="text-center text-white" x-text="ask.size"></span>
+                                <span class="text-right text-bear" x-text="ask.price"></span>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Spread -->
+                    <div class="bg-bg py-1 text-center border-y border-border">
+                        <span class="text-xs font-mono text-text-secondary">SPREAD: 5.00</span>
+                    </div>
+
+                    <!-- Bids (Buys) -->
+                    <div class="h-1/2 overflow-hidden">
+                        <template x-for="bid in bids" :key="bid.id">
+                            <div class="grid grid-cols-3 text-xs p-1 hover:bg-white/5 cursor-pointer font-mono">
+                                <span class="text-bull opacity-70" x-text="bid.trader"></span>
+                                <span class="text-center text-white" x-text="bid.size"></span>
+                                <span class="text-right text-bull" x-text="bid.price"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Col: Analytics & Chart (6 cols) -->
+            <div class="lg:col-span-6 flex flex-col gap-4 h-full">
+                <!-- Chart Container -->
+                <div class="bg-surface border border-border rounded-lg p-4 flex-grow flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xs font-bold text-white">PRICE PERFORMANCE (30D)</h3>
+                        <div class="flex space-x-2">
+                            <span
+                                class="text-[10px] bg-bg px-2 py-1 rounded text-text-secondary cursor-pointer hover:text-white">1H</span>
+                            <span
+                                class="text-[10px] bg-bg px-2 py-1 rounded text-text-secondary cursor-pointer hover:text-white">1D</span>
+                            <span
+                                class="text-[10px] bg-action px-2 py-1 rounded text-white font-bold cursor-pointer">30D</span>
+                        </div>
+                    </div>
+                    <div class="flex-grow w-full relative">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Execution Panel -->
+                <div class="bg-surface border border-border rounded-lg p-6 h-auto">
+                    <div class="grid grid-cols-2 gap-4 h-full">
+                        <% if (user && product.user && user._id.toString()===product.user._id.toString()) { %>
+                            <form action="/products/<%= product._id %>/delete" method="POST" class="col-span-2"
+                                onsubmit="return confirm('Are you sure you want to LIQUIDATE this position?')">
+                                <button
+                                    class="w-full h-12 bg-bear hover:bg-red-600 text-white font-mono font-bold text-sm rounded transition flex items-center justify-center space-x-2">
+                                    <i class="fas fa-trash"></i>
+                                    <span>LIQUIDATE ASSET (DELETE)</span>
+                                </button>
+                            </form>
+                            <% } else { %>
+                                <button @click="addToPortfolio('LONG')"
+                                    class="h-14 bg-bull hover:bg-green-400 text-black font-mono font-bold text-lg rounded shadow-lg shadow-bull/20 transition flex flex-col items-center justify-center border-b-4 border-green-700 active:border-b-0 active:translate-y-1">
+                                    <span>LONG POSITION</span>
+                                    <span class="text-[10px] font-normal opacity-80 font-sans">BUY NOW @ MKT</span>
+                                </button>
+                                <button @click="addToPortfolio('HOLD')"
+                                    class="h-14 bg-action hover:bg-blue-600 text-white font-mono font-bold text-lg rounded shadow-lg shadow-action/20 transition flex flex-col items-center justify-center border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">
+                                    <span>HOLD</span>
+                                    <span class="text-[10px] font-normal opacity-80 font-sans">ADD TO PORTFOLIO</span>
+                                </button>
+                                <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function terminalData() {
+            return {
+                basePrice: <%= product.price %>,
+                currentPrice: '<%= product.price %>', // String for fixed dec
+                percentChange: '0.00',
+                asks: [],
+                bids: [],
+
+                init() {
+                    this.generateOrderBook();
+                    this.initChart();
+
+                    // Jitter Effect
+                    setInterval(() => {
+                        const jitter = (Math.random() - 0.5) * 5; // +/- 2.5
+                        let newPrice = this.basePrice + jitter;
+                        this.currentPrice = newPrice.toFixed(2);
+
+                        // Calc % change from base
+                        const change = ((newPrice - this.basePrice) / this.basePrice) * 100;
+                        this.percentChange = (change > 0 ? '+' : '') + change.toFixed(2);
+
+                        // Update Order Book slightly
+                        this.updateOrderBook(newPrice);
+                    }, 2000);
+                },
+
+                generateOrderBook() {
+                    // Initial fake data
+                    for (let i = 0; i < 5; i++) {
+                        this.asks.push({ id: i, trader: 'Trader_' + Math.floor(Math.random() * 9000 + 1000), size: Math.floor(Math.random() * 5), price: (this.basePrice + (i + 1) * 5 + Math.random()).toFixed(2) });
+                        this.bids.push({ id: i, trader: 'Student_' + Math.floor(Math.random() * 9000 + 1000), size: Math.floor(Math.random() * 5), price: (this.basePrice - (i + 1) * 5 - Math.random()).toFixed(2) });
+                    }
+                },
+
+                updateOrderBook(centerPrice) {
+                    // Randomly update one bid/ask
+                    if (Math.random() > 0.5) {
+                        this.asks[0].price = (parseFloat(centerPrice) + Math.random() * 2).toFixed(2);
+                    } else {
+                        this.bids[0].price = (parseFloat(centerPrice) - Math.random() * 2).toFixed(2);
+                    }
+                },
+
+                initChart() {
+                    const ctx = document.getElementById('mainChart').getContext('2d');
+
+                    // Generate 30 days of fake data walking form base price
+                    const labels = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
+                    let dataPoints = [];
+                    let price = this.basePrice * 0.8; // Start lower
+                    for (let i = 0; i < 30; i++) {
+                        price = price * (1 + (Math.random() - 0.45) * 0.1); // Random walk
+                        dataPoints.push(price);
+                    }
+                    // Ensure ends near current
+                    dataPoints[29] = this.basePrice;
+
+                    // Gradient
+                    const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                    gradient.addColorStop(0, 'rgba(41, 98, 255, 0.5)');
+                    gradient.addColorStop(1, 'rgba(41, 98, 255, 0)');
+
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Price History',
+                                data: dataPoints,
+                                borderColor: '#2962ff',
+                                backgroundColor: gradient,
+                                fill: true,
+                                tension: 0.4,
+                                pointRadius: 0,
+                                pointHoverRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: { intersect: false, mode: 'index' },
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                x: { display: false },
+                                y: {
+                                    grid: { color: '#2a2e39' },
+                                    ticks: { color: '#b2b5be', font: { family: 'IBM Plex Mono' } }
+                                }
+                            }
+                        }
+                    });
+                },
+
+                addToPortfolio(type) {
+                    const item = {
+                        id: '<%= product._id %>',
+                        title: '<%= product.title %>',
+                        price: <%= product.price %>,
+                        image: '<%= product.images[0] || "" %>',
+                        type: type,
+                        timestamp: Date.now()
+                    };
+
+                    let portfolio = JSON.parse(localStorage.getItem('terminal_portfolio') || '[]');
+                    if (!portfolio.find(p => p.id === item.id)) {
+                        portfolio.push(item);
+                        localStorage.setItem('terminal_portfolio', JSON.stringify(portfolio));
+                        alert(type + ' ORDER CONFIRMED');
+                    } else {
+                        alert('POSITION ALREADY OPEN');
+                    }
+                    playTradeSound();
+                }
+            }
+        }
+
+        function playTradeSound() {
+            // Simple beep for trade execution
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.type = 'sine';
+            oscillator.frequency.value = 800;
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+
+            // redirect after sound
+            // window.location.href = ... (Buy Logic)
+        }
+    </script>
+
+    <%- include('../partials/footer') %>

@@ -1,0 +1,161 @@
+<%- include('../partials/header') %>
+
+    <div class="container mx-auto px-4 py-12 max-w-3xl">
+        <div class="bg-surface border border-border rounded-lg shadow-2xl overflow-hidden">
+            <!-- IPO Header -->
+            <div class="bg-bg border-b border-border p-6 flex justify-between items-center relative overflow-hidden">
+                <div class="relative z-10">
+                    <h2 class="text-2xl font-bold text-white font-mono flex items-center gap-3">
+                        <i class="fas fa-file-signature text-action"></i>
+                        NEW IPO FILING
+                    </h2>
+                    <p class="text-text-secondary text-xs font-mono mt-1">INITIAL PRODUCT OFFERING REGISTRATION // SEC
+                        FORM S-1</p>
+                </div>
+                <div class="text-right hidden md:block z-10">
+                    <p class="text-[10px] text-text-secondary font-mono">STATUS</p>
+                    <p class="text-bull font-bold font-mono animate-pulse">● DRAFTING</p>
+                </div>
+                <!-- Decorative BG -->
+                <div class="absolute top-0 right-0 w-32 h-32 bg-action/5 rounded-full blur-3xl -mr-10 -mt-10"></div>
+            </div>
+
+            <div class="p-8">
+                <% if (locals.error && locals.error.length> 0) { %>
+                    <div
+                        class="bg-bear/10 border border-bear/20 text-bear px-4 py-3 rounded mb-6 text-sm font-mono flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <%= error %>
+                    </div>
+                    <% } %>
+
+                        <form action="/products" method="POST" enctype="multipart/form-data" class="space-y-6">
+                            <!-- Asset Details Section -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="space-y-2">
+                                    <label class="block text-xs font-bold text-text-secondary font-mono uppercase">Asset
+                                        Name (Title)</label>
+                                    <input type="text" name="title" required
+                                        class="w-full bg-bg border border-border rounded px-4 py-3 text-white focus:border-action focus:outline-none focus:ring-1 focus:ring-action transition font-mono"
+                                        placeholder="e.g. SCIENTIFIC CALCULATOR FX-991"
+                                        value="<%= locals.formData ? formData.title : '' %>">
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label
+                                        class="block text-xs font-bold text-text-secondary font-mono uppercase">Initial
+                                        Price (BDT)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-3 text-text-secondary">৳</span>
+                                        <input type="number" name="price" required
+                                            class="w-full bg-bg border border-border rounded pl-8 pr-4 py-3 text-white focus:border-action focus:outline-none focus:ring-1 focus:ring-action transition font-mono"
+                                            placeholder="500.00" value="<%= locals.formData ? formData.price : '' %>">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-text-secondary font-mono uppercase">Market
+                                    Sector (Category)</label>
+                                <div class="relative">
+                                    <select name="category"
+                                        class="w-full bg-bg border border-border rounded px-4 py-3 text-white focus:border-action focus:outline-none focus:ring-1 focus:ring-action transition font-mono appearance-none cursor-pointer">
+                                        <option value="Books">BOOKS & MANUALS</option>
+                                        <option value="Electronics">ELECTRONICS</option>
+                                        <option value="Furniture">DORM FURNITURE</option>
+                                        <option value="Clothing">APPAREL</option>
+                                        <option value="Stationery">STATIONERY</option>
+                                        <option value="Other">OTHER ASSETS</option>
+                                    </select>
+                                    <div class="absolute right-4 top-3 text-text-secondary pointer-events-none">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-text-secondary font-mono uppercase">Full
+                                    Prospectus (Description)</label>
+                                <textarea name="description" rows="5" required
+                                    class="w-full bg-bg border border-border rounded px-4 py-3 text-white focus:border-action focus:outline-none focus:ring-1 focus:ring-action transition font-mono text-sm leading-relaxed"
+                                    placeholder="Provide detailed disclosure of asset condition, history, and specifications..."><%= locals.formData ? formData.description : '' %></textarea>
+                            </div>
+
+                            <!-- Image Upload with Preview Logic would go here - simplified for now -->
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-text-secondary font-mono uppercase">Asset
+                                    Images (Max 5)</label>
+                                <div
+                                    class="border-2 border-dashed border-border rounded-lg p-6 text-center hover:bg-bg/50 transition cursor-pointer relative">
+                                    <input type="file" name="images" multiple accept="image/*"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                                    <div class="text-text-secondary">
+                                        <i class="fas fa-cloud-upload-alt text-3xl mb-2 text-action"></i>
+                                        <p class="text-sm font-mono">DRAG FILES OR CLICK TO UPLOAD</p>
+                                        <p class="text-[10px] opacity-70 mt-1">SUPPORTED: JPG, PNG, WEBP</p>
+                                    </div>
+                                    <div id="preview-container"
+                                        class="mt-4 grid grid-cols-3 gap-2 hidden relative z-20 pointer-events-none">
+                                    </div>
+                                </div>
+                                <script>
+                                    document.addEventListener('DOMContentLoaded', () => {
+                                        const fileInput = document.querySelector('input[name="images"]');
+                                        const previewContainer = document.getElementById('preview-container');
+                                        const dropZone = fileInput.closest('.border-dashed');
+
+                                        fileInput.addEventListener('change', function (e) {
+                                            previewContainer.innerHTML = '';
+                                            previewContainer.classList.remove('hidden');
+
+                                            if (this.files.length > 0) {
+                                                // Visual feedback on dropzone
+                                                dropZone.classList.add('border-action', 'bg-action/5');
+
+                                                Array.from(this.files).forEach(file => {
+                                                    const reader = new FileReader();
+                                                    reader.onload = function (e) {
+                                                        const div = document.createElement('div');
+                                                        div.className = 'relative aspect-square bg-black border border-border rounded overflow-hidden group';
+                                                        div.innerHTML = `
+                                                            <img src="${e.target.result}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition">
+                                                            <div class="absolute bottom-0 left-0 right-0 bg-black/80 text-[8px] text-white p-1 truncate font-mono">
+                                                                ${file.name}
+                                                            </div>
+                                                        `;
+                                                        previewContainer.appendChild(div);
+                                                    }
+                                                    reader.readAsDataURL(file);
+                                                });
+                                            } else {
+                                                dropZone.classList.remove('border-action', 'bg-action/5');
+                                                previewContainer.classList.add('hidden');
+                                            }
+                                        });
+                                    });
+                                </script>
+                            </div>
+
+                            <div class="flex items-center space-x-3 p-4 bg-bg/50 border border-border rounded">
+                                <input type="checkbox" name="isAnonymous" id="isAnonymous"
+                                    class="w-4 h-4 rounded border-border bg-bg text-action focus:ring-0">
+                                <div>
+                                    <label for="isAnonymous"
+                                        class="text-sm font-bold text-white font-mono cursor-pointer block">DARK POOL
+                                        LISTING (ANONYMOUS)</label>
+                                    <p class="text-[10px] text-text-secondary">Hide your identity on the public ledger.
+                                        Buyers can still contact you securely.</p>
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full bg-action hover:bg-blue-600 text-white font-mono font-bold py-4 rounded shadow-lg shadow-action/20 transition transform active:scale-[0.99] flex items-center justify-center space-x-2">
+                                <i class="fas fa-paper-plane"></i>
+                                <span>SUBMIT FOR PUBLIC TRADING</span>
+                            </button>
+                        </form>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
